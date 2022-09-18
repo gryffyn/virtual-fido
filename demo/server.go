@@ -5,11 +5,7 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"os/exec"
 	"strings"
-	"sync"
-	"time"
-	"virtual_fido"
 )
 
 func prompt(prompt string) string {
@@ -67,26 +63,4 @@ func (support *ClientSupport) RetrieveData() []byte {
 
 func (support *ClientSupport) Passphrase() string {
 	return support.vaultPassphrase
-}
-
-func runServer(client virtual_fido.Client) {
-	wg := &sync.WaitGroup{}
-	wg.Add(2)
-	go func() {
-		virtual_fido.Start(client)
-		wg.Done()
-	}()
-	go func() {
-		time.Sleep(500 * time.Millisecond)
-		prog := exec.Command("./usbip/usbip.exe", "attach", "-r", "127.0.0.1", "-b", "2-2")
-		prog.Stdin = os.Stdin
-		prog.Stdout = os.Stdout
-		prog.Stderr = os.Stderr
-		err := prog.Run()
-		if err != nil {
-			fmt.Printf("Error: %s\n", err)
-		}
-		wg.Done()
-	}()
-	wg.Wait()
 }
